@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         gridLayoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS);
 
         recyclerView.setLayoutManager(gridLayoutManager);
-        initialCount = Notes.count(Notes.class);
+//        initialCount = Notes.count(Notes.class);
 
         if (savedInstanceState != null)
             modifyPos = savedInstanceState.getInt("modify");
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (initialCount >= 0) {
 
-            notes = Notes.listAll(Notes.class);
+//            notes = Notes.listAll(Notes.class);
 
             adapter = new NotesAdapter(MainActivity.this, notes);
             recyclerView.setAdapter(adapter);
@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 notes.remove(viewHolder.getAdapterPosition());
                 adapter.notifyItemRemoved(position);
 
-                note.delete();
+//                note.delete();
                 initialCount -= 1;
 
                 Snackbar.make(recyclerView, "Note deleted", Snackbar.LENGTH_SHORT)
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onClick(View v) {
 
-                                note.save();
+//                                note.save();
                                 notes.add(position, note);
                                 adapter.notifyItemInserted(position);
                                 initialCount += 1;
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        final long newCount = Notes.count(Notes.class);
+/*        final long newCount = Notes.count(Notes.class);
 
         if (newCount > initialCount) {
             // A note is added
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
         if (modifyPos != -1) {
             notes.set(modifyPos, Notes.listAll(Notes.class).get(modifyPos));
             adapter.notifyItemChanged(modifyPos);
-        }
+        }*/
 
     }
 

@@ -1,11 +1,12 @@
 package com.immran.notes.model;
 
-import com.orm.SugarRecord;
+
+import io.realm.RealmObject;
 
 /**
  * Created by immran on 04/05/2016.
  */
-public class Notes extends SugarRecord {
+public class Notes extends RealmObject {
     public String title;
     public String description;
     public long time;

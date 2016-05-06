@@ -86,12 +86,12 @@ public class ActivityNotes extends AppCompatActivity {
                 if (!editingNote) {
                     Log.d("Note", "saving");
                     Notes note = new Notes(newTitle, newDesc, newTime);
-                    note.save();
+//                    note.save();
                 } else {
                     Log.d("Note", "updating");
 
 //                    List<Note> notes = Note.findWithQuery(Note.class, "where title = ?", title);
-                    List<Notes> notes = Notes.find(Notes.class, "title = ?", title);
+                    /*List<Notes> notes = Notes.find(Notes.class, "title = ?", title);
                     if (notes.size() > 0) {
 
                         Notes note = notes.get(0);
@@ -102,7 +102,7 @@ public class ActivityNotes extends AppCompatActivity {
 
                         note.save();
 
-                    }
+                    }*/
 
                 }
 
