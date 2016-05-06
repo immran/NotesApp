@@ -15,6 +15,10 @@ import com.immran.notes.model.Notes;
 
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+
 /**
  * Created by immran on 04/05/2016.
  */
@@ -53,6 +57,8 @@ public class ActivityNotes extends AppCompatActivity {
 
         fab = (FloatingActionButton) findViewById(R.id.addnote_fab);
 
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder(this).build();
+        final Realm realm= Realm.getInstance(realmConfiguration);
 
         //  handle intent
 
@@ -75,7 +81,7 @@ public class ActivityNotes extends AppCompatActivity {
 
                 // Add note to DB
 
-                String newTitle = etTitle.getText().toString();
+                final String newTitle = etTitle.getText().toString();
                 String newDesc = etDesc.getText().toString();
                 long newTime = System.currentTimeMillis();
 
@@ -85,13 +91,20 @@ public class ActivityNotes extends AppCompatActivity {
                  */
                 if (!editingNote) {
                     Log.d("Note", "saving");
-                    Notes note = new Notes(newTitle, newDesc, newTime);
-//                    note.save();
+                    realm.beginTransaction();
+
+                    Notes note = realm.createObject(Notes.class);
+                    note.setTitle(newTitle);
+                    note.setDescription(newDesc);
+                    note.setTime(newTime);
+
+                    realm.commitTransaction();
+
+
                 } else {
                     Log.d("Note", "updating");
 
-//                    List<Note> notes = Note.findWithQuery(Note.class, "where title = ?", title);
-                    /*List<Notes> notes = Notes.find(Notes.class, "title = ?", title);
+                    /*final List<Notes> notes = Notes.find(Notes.class, "title = ?", title);
                     if (notes.size() > 0) {
 
                         Notes note = notes.get(0);
@@ -103,6 +116,12 @@ public class ActivityNotes extends AppCompatActivity {
                         note.save();
 
                     }*/
+
+                    realm.beginTransaction();
+                    Notes realmResults = realm.where(Notes.class).equalTo("title",title).findFirst();
+                    realmResults.setTitle(newTitle);
+
+                    realm.commitTransaction();
 
                 }
 

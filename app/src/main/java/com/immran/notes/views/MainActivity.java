@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -27,24 +28,26 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+
+public class MainActivity extends AppCompatActivity{
 
     RecyclerView recyclerView;
     FloatingActionButton fab;
-
     NotesAdapter adapter;
     List<Notes> notes = new ArrayList<>();
 
     long initialCount;
 
     int modifyPos = -1;
+    Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
-
-        Log.d("Main", "onCreate");
 
         recyclerView = (RecyclerView) findViewById(R.id.main_list);
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -54,44 +57,40 @@ public class MainActivity extends AppCompatActivity {
         gridLayoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS);
 
         recyclerView.setLayoutManager(gridLayoutManager);
-//        initialCount = Notes.count(Notes.class);
+        realm = Realm.getDefaultInstance();
+
+        initialCount = realm.where(Notes.class).count();
 
         if (savedInstanceState != null)
             modifyPos = savedInstanceState.getInt("modify");
 
+        RealmResults<Notes> results1 =
+                realm.where(Notes.class).findAll();
 
-        if (initialCount >= 0) {
-
-//            notes = Notes.listAll(Notes.class);
-
-            adapter = new NotesAdapter(MainActivity.this, notes);
-            recyclerView.setAdapter(adapter);
-
-            if (notes.isEmpty())
-                Snackbar.make(recyclerView, "No notes added.", Snackbar.LENGTH_LONG).show();
-
+        for (Notes c : results1) {
+            notes.add(c);
         }
+
+
+        adapter = new NotesAdapter(MainActivity.this, notes);
+        recyclerView.setAdapter(adapter);
+
 
         // tinting FAB icon
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-
             Drawable drawable = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_add);
             drawable = DrawableCompat.wrap(drawable);
             DrawableCompat.setTint(drawable, Color.WHITE);
             DrawableCompat.setTintMode(drawable, PorterDuff.Mode.SRC_IN);
-
             fab.setImageDrawable(drawable);
-
         }
 
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 Intent i = new Intent(MainActivity.this, ActivityNotes.class);
                 startActivity(i);
-
             }
         });
 
@@ -120,49 +119,37 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("UNDO", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-
 //                                note.save();
                                 notes.add(position, note);
                                 adapter.notifyItemInserted(position);
                                 initialCount += 1;
-
                             }
                         })
                         .show();
             }
-
         };
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
 
-        if (initialCount >0) {
+        if (initialCount > 0) {
             adapter.SetOnItemClickListener(new NotesAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(View view, int position) {
 
-                    Log.d("Main", "click");
+                    Intent i = new Intent(MainActivity.this, ActivityNotes.class);
+                    i.putExtra("isEditing", true);
+                    i.putExtra("note_title", notes.get(position).title);
+                    i.putExtra("note", notes.get(position).description);
+                    i.putExtra("note_time", notes.get(position).time);
 
-                Intent i = new Intent(MainActivity.this, ActivityNotes.class);
-                i.putExtra("isEditing", true);
-                i.putExtra("note_title", notes.get(position).title);
-                i.putExtra("note", notes.get(position).description);
-                i.putExtra("note_time", notes.get(position).time);
-
-                modifyPos = position;
-
-                startActivity(i);
+                    modifyPos = position;
+                    startActivity(i);
                 }
             });
 
         }
-
-//        List<Note> notes = Note.findWithQuery(Note.class, "Select title from Note where title = ?", "%note%");
-//        if (notes.size() > 0)
-//            Log.d("Notes", "note: " + notes.get(0).title);
-
-
     }
 
 
@@ -184,14 +171,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-/*        final long newCount = Notes.count(Notes.class);
+        final long newCount = realm.where(Notes.class).count();
 
         if (newCount > initialCount) {
             // A note is added
             Log.d("Main", "Adding new note");
 
             // Just load the last added note (new)
-            Notes note = Notes.last(Notes.class);
+            Notes note = realm.where(Notes.class).findFirst();
+            //Notes.last(Notes.class);
 
             notes.add(note);
             adapter.notifyItemInserted((int) newCount);
@@ -200,9 +188,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (modifyPos != -1) {
-            notes.set(modifyPos, Notes.listAll(Notes.class).get(modifyPos));
+            RealmResults<Notes> users = realm.where(Notes.class)
+                    .findAll();
+            notes.set(modifyPos, users.get(modifyPos));
             adapter.notifyItemChanged(modifyPos);
-        }*/
+        }
 
     }
 
@@ -210,6 +200,4 @@ public class MainActivity extends AppCompatActivity {
     public static String getDateFormat(long date) {
         return new SimpleDateFormat("dd MMM yyyy").format(new Date(date));
     }
-
-
 }
